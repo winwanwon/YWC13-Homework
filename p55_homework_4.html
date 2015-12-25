@@ -1,0 +1,163 @@
+<!--
+  Young Webmaster Camp 13th
+  Web Programming Homework
+  P55 Mr. Warat Kaweepornpoj (@winwanwon)
+
+  HTML5 Technologies Used
+  - Canvas
+  - Color Input
+  - LocalStorage
+  - CSS3 Transition
+  - CSS3 Gradient
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YWC13: Web Programming Homework</title>
+  <style>
+  body {
+    font-family: Georgia;
+  }
+
+  label {
+    font-weight: bold;
+  }
+
+  .wrapper {
+    margin: 30px;
+  }
+
+  #control-panel {
+    margin: 13px auto;
+    padding: 15px;
+    width: 760px;
+    text-align:center;
+    -webkit-transition: all 0.75s ease-in-out;
+    -moz-transition: all 0.75s ease-in-out;
+    -o-transition: all 0.75s ease-in-out;
+    -ms-transition: all 0.75s ease-in-out;
+  }
+
+  .canvas {
+    margin: auto;
+    width: 800px;
+  }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="canvas">
+      <canvas id="ywc_canvas" width="800" height="400">เบราเซอร์ไม่สนับสนุน HTML5 Canvas</canvas>
+    </div>
+    <div id="control-panel">
+      <label>Color Picker</label><br>
+      <input type="color" value="#005EC2" id="colorpicker">
+    </div>
+  </div>
+  <script>
+  var canvas = document.getElementById("ywc_canvas");
+  var pallete = document.getElementById("c_pallete");
+  var colorpicker = document.getElementById("colorpicker");
+  var context = canvas.getContext("2d");
+  var textMap =
+  [
+    "....................",
+    "....................",
+    ".Y...Y..W...W...CCC.",
+    ".Y...Y..W...W..C....",
+    "..YYY...W...W..C....",
+    "...Y....W.W.W..C....",
+    "...Y.....W.W...C....",
+    "...Y.....W.W....CCC.",
+    "....................",
+    "....................",
+  ];
+
+  function drawBG(textMap, textColorCode){
+    var x,y,rand;
+    var color,colorCode,textColor,bgColor;
+    var bgColorCode = ComplementTone(textColorCode);
+    bgColorCode =  colorTone(bgColorCode,0.10);
+    var textColorDarker = colorTone(textColorCode, -0.1);
+    var textColorDarkest = colorTone(textColorCode, -0.2);
+    var bgColorBrighter = colorTone(bgColorCode, 0.15);
+    var bgColorBrightest = colorTone(bgColorCode, 0.2);
+    textColor = [textColorCode,textColorDarkest,textColorDarker];
+    bgColor = [bgColorCode,bgColorBrighter,bgColorBrightest];
+    document.getElementById("control-panel").style.background = "-webkit-linear-gradient(90deg," + bgColorBrighter + " 0%,rgba(0,0,0,0) 100%)";
+    document.getElementById("control-panel").style.border = "5px solid " + textColorCode;
+    console.log("textColor: " + textColor);
+    console.log("bgColor: " + bgColor);
+    for(y=0;y<10;y+=1){
+      for(x=0;x<20;x+=1){
+        rand = Math.floor(Math.random()*3);
+        colorCode = bgColor[rand];
+        if(textMap[y][x]!="."){
+          colorCode = textColor[rand];
+        }
+        context.beginPath();
+        context.rect(x*40, y*40, 40, 40);
+        context.fillStyle = colorCode;
+        context.fill();
+        context.closePath();
+      }
+    }
+  }
+
+  function hexValidate(hexColorCode){
+    hexColorCode = String(hexColorCode).replace(/[^0-9a-f]/gi, '');
+    if (hexColorCode.length < 6) {
+      hexColorCode = hexColorCode[0]+hexColorCode[0]+hexColorCode[1]+hexColorCode[1]+hexColorCode[2]+hexColorCode[2];
+    }
+    return hexColorCode;
+  }
+
+  function colorTone(hexColorCode, luminance){
+    hexColorCode = hexValidate(hexColorCode);
+    var i,c,rgb;
+    for (i = 0; i < 3; i++) {
+      c = parseInt(hexColorCode.substr(i*2,2), 16);
+      c = Math.round(Math.min(Math.max(0, c + (c * luminance)), 255)).toString(16);
+      rgb += ("00"+c).substr(c.length);
+    }
+    rgb = rgb.replace("undefined","");
+    return "#" + rgb;
+  }
+
+  function ComplementTone(hexColorCode){
+    hexColorCode = hexValidate(hexColorCode);
+    var i,c,rgb;
+    for (i = 0; i < 3; i++) {
+      c = parseInt(hexColorCode.substr(i*2,2), 16);
+      c = (255-c).toString(16);
+      rgb += ("00"+c).substr(c.length);
+    }
+    rgb = rgb.replace("undefined","");
+    return "#" + rgb;
+  }
+
+  colorpicker.addEventListener("change", function(){
+    console.log("Color Changed!");
+    var textColorCode = "#" + hexValidate(colorpicker.value);
+    drawBG(textMap, textColorCode);
+    if (typeof(localStorage) == "undefined" ) {
+      alert("Your browser does not support HTML5 localStorage.");
+    } else {
+      localStorage.setItem("textColor", textColorCode);
+      console.log("Set LocalStorage: " + localStorage.getItem("textColor"));
+    }
+  });
+  var previousTextColor = localStorage.getItem("textColor");
+  if(previousTextColor){
+    console.log("(LocalStorage)\nTextColor: " + localStorage.getItem("textColor"));
+    colorpicker.value = previousTextColor;
+    drawBG(textMap, previousTextColor);
+  } else {
+    console.log("First time here! LocalStorage data not found.")
+    drawBG(textMap, "#005ec2");
+  }
+  </script>
+</body>
+</html>
